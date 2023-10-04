@@ -1,0 +1,167 @@
+{{ template "head" . }}
+
+{{ with .Data }}
+
+<div class="panel">
+
+	<div class="box box-first">
+		<div class="col col-main">
+			<div class="content content-centered">
+				<div>
+					<h2>Site Issues</h2>
+				</div>
+			</div>
+		</div>
+
+		<div class="col col-actions-l">
+			<div class="main-action">
+				<a href="/dashboard?pid={{ .ProjectView.Project.Id }}">{{ .ProjectView.Project.Host }}</a>
+			</div>
+		</div>
+	</div>
+		
+	{{ $pid := .ProjectView.Project.Id }}
+
+	<div class="box box-highlight">
+		<div class="col">
+			<div class="content" >
+				<h2>
+					{{ if ne .ProjectView.Crawl.CriticalIssues 0 }}
+						<a href="#critical" class="borderless">{{ .ProjectView.Crawl.CriticalIssues }} Critical Issues</a>
+					{{ else }}
+						{{ .ProjectView.Crawl.CriticalIssues }} Critical Issues
+					{{ end }}
+					
+				</h2>
+				<p>Critical errors affecting your ranking. Fix them first.</p>
+			</div>
+		</div>
+		
+		<div class="col">
+			<div class="content">
+				<h2>
+					{{ if ne .ProjectView.Crawl.AlertIssues 0 }}
+						<a href="#alert" class="borderless">{{ .ProjectView.Crawl.AlertIssues }} Alerts</a>
+					{{ else }}
+						{{ .ProjectView.Crawl.AlertIssues }} Alerts
+					{{ end }}
+				</h2>
+				<p>Issues that are holding your site back. Fix them next.</p>
+			</div>
+		</div>
+
+		<div class="col">
+			<div class="content">
+				<h2>
+					{{ if ne .ProjectView.Crawl.WarningIssues 0 }}
+						<a href="#warning" class="borderless">{{ .ProjectView.Crawl.WarningIssues }} Warnings</a>
+					{{ else }}
+						{{ .ProjectView.Crawl.WarningIssues }} Warnings
+					{{ end }}
+				</h2>
+				<p>Issues you may want to keep an eye on.</p>
+			</div>
+		</div>
+	</div>
+			
+	{{ if .IssueCount.CriticalIssues }}
+		{{ range .IssueCount.CriticalIssues }}
+			<a name="critical"></a>
+			<div class="box borderless">
+				<div class="col col-main">
+					<div class="content">
+						<h2>{{ trans .ErrorType }}</h2>
+						<p>{{ trans (print .ErrorType "_DESC") }}</p>
+					</div>
+				</div>
+
+				<div class="col col-actions">
+					<a href="/download?pid={{ $pid }}&eid={{ .ErrorType }}">Download URLs</a>
+					<a href="/issues/view?pid={{ $pid }}&eid={{ .ErrorType }}" class="highlight">View URLs</a>
+				</div>
+			</div>
+
+			<div class="box box-highlight inverted always-row">
+				<div class="col col-s bg-alert">
+					<div class="content content-s">
+						CRITICAL
+					</div>
+				</div>
+				<div clas="col">
+					<div class="content content-s">
+						{{ .Count }} {{ if eq .Count 1 }}URL{{ else }}URLs{{end }}
+					</div>
+				</div>
+			</div>
+		{{ end }}
+	{{ end }}
+
+	{{ if .IssueCount.AlertIssues }}
+		{{ range .IssueCount.AlertIssues }}
+			<a name="alert"></a>
+			<div class="box borderless">
+				<div class="col col-main">
+					<div class="content">
+						<h2>{{ trans .ErrorType }}</h2>
+						<p>{{ trans (print .ErrorType "_DESC") }}</p>
+					</div>
+				</div>
+
+				<div class="col col-actions">
+					<a href="/download?pid={{ $pid }}&eid={{ .ErrorType }}">Download URLs</a>
+					<a href="/issues/view?pid={{ $pid }}&eid={{ .ErrorType }}" class="highlight">View URLs</a>
+				</div>
+			</div>
+
+			<div class="box box-highlight inverted always-row" >
+				<div class="col col-s bg-alert">
+					<div class="content content-s">
+						ALERT
+					</div>
+				</div>
+				<div clas="col">
+					<div class="content content-s">
+						{{ .Count }} {{ if eq .Count 1 }}URL{{ else }}URLs{{end }}
+					</div>
+				</div>
+			</div>
+		{{ end }}
+	{{ end }}
+
+	{{ if .IssueCount.WarningIssues }}
+		{{ range .IssueCount.WarningIssues }}
+			<a name="warning"></a>
+			<div class="box borderless">
+				<div class="col col-main">
+					<div class="content">
+						<h2>{{ trans .ErrorType }}</h2>
+						<p>{{ trans (print .ErrorType "_DESC") }}</p>
+					</div>
+				</div>
+
+				<div class="col col-actions">
+					<a href="/download?pid={{ $pid }}&eid={{ .ErrorType }}">Download URLs</a>
+					<a href="/issues/view?pid={{ $pid }}&eid={{ .ErrorType }}" class="highlight">View URLs</a>
+				</div>
+			</div>
+
+			<div class="box box-highlight inverted always-row">
+				<div class="col col-s bg-alert">
+					<div class="content content-s">
+						WARNING
+					</div>
+				</div>
+				<div clas="col">
+					<div class="content content-s">
+						{{ .Count }} {{ if eq .Count 1 }}URL{{ else }}URLs{{end }}
+					</div>
+				</div>
+			</div>
+		{{ end }}
+	{{ end }}
+
+</div>
+
+{{ end}}
+
+{{ template "footer" . }}

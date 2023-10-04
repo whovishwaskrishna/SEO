@@ -1,0 +1,698 @@
+{{ template "head" . }}
+
+{{ with .Data }}
+<a name="menu"></a>
+
+{{ $parameters := printf "?pid=%d&rid=%d" .ProjectView.Project.Id .PageReportView.PageReport.Id }}
+
+<div class="panel">
+
+	<div class="box box-first">
+		<div class="col col-main">
+			<div class="content">
+				{{ if .Eid }}
+					<a href="/issues?pid={{ .ProjectView.Project.Id }}">Site Issues</a> 
+					/ 
+					<a href="/issues/view?pid={{ .ProjectView.Project.Id }}&eid={{ .Eid }}">{{ trans .Eid }}</a>
+					{{ $parameters = printf "%s&eid=%s" $parameters .Eid }}
+				{{ else if .Ep }}
+					<a href="/explorer?pid={{ .ProjectView.Project.Id }}">Page Details</a>
+					{{ $parameters = printf "%s&ep=%s" $parameters .Ep }}
+				{{ end }}
+
+				{{ $parameters = printf "%s&rid=%d" $parameters .PageReportView.PageReport.Id }}
+			</div>
+		</div>
+
+		<div class="col col-actions-l">
+			<div class="main-action">
+				<a href="/dashboard?pid={{ .ProjectView.Project.Id }}">{{ .ProjectView.Project.Host }}</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="box box-highlight">
+		<div class="col col-main">
+			<div class="content content-centered">
+				<div class="url">
+					{{ if .PageReportView.PageReport.Title }}
+					{{ .PageReportView.PageReport.Title }} <br>
+					{{ end }}
+					{{ .PageReportView.PageReport.URL }}
+					<a class="borderless" href="{{ .PageReportView.PageReport.URL }}" target="_blank">↗</a>
+				</div>
+			 </div>
+		</div>
+
+		<div class="col">
+			<div class="content content-centered">
+
+				<details>
+					<summary>
+						{{ if eq .Tab "details" }} Details {{ end }}
+						{{ if eq .Tab "inlinks" }} Inlinks {{ end }}
+						{{ if eq .Tab "internal" }} Internal links {{ end }}
+						{{ if eq .Tab "external"}} External links {{ end }}
+						{{ if eq .Tab "redirections" }} Redirections {{ end }}
+						{{ if eq .Tab "images" }} Images {{ end }}
+						{{ if eq .Tab "audios" }} Audios {{ end }}
+						{{ if eq .Tab "videos" }} Videos {{ end }}
+						{{ if eq .Tab "iframes" }} Iframes {{ end }}
+						{{ if eq .Tab "scripts" }} Scripts {{ end }}
+						{{ if eq .Tab "styles" }} Styles {{ end }}
+					</summary>
+
+					<ul>
+						<li>
+							<a href="/resources{{ printf "%s&t=details" $parameters }}">Details</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=inlinks" $parameters }}">Inlinks</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=internal" $parameters }}">Internal links</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=external" $parameters }}">External links</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=redirections" $parameters }}">Redirections</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=audios" $parameters }}">Audios</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=videos" $parameters }}">Videos</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=images" $parameters }}">Images</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=iframes" $parameters }}">Iframes</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=scripts" $parameters }}">Scripts</a>
+						</li>
+
+						<li>
+							<a href="/resources{{ printf "%s&t=styles" $parameters }}">Styles</a>
+						</li>
+					</ul>
+				</details>
+
+			</div>
+		</div>
+	</div>
+
+	{{ $cid := .ProjectView.Crawl.Id }}
+	{{ $pid := .ProjectView.Project.Id }}
+	{{ $crawlSitemap := .ProjectView.Project.CrawlSitemap }}
+	{{ $eid := .Eid }}
+	{{ $parameters = printf "%s&t=%s" $parameters .Tab }}
+
+	{{ if eq .Tab "details" }}
+		{{ $errorTypes := .PageReportView.ErrorTypes }}
+		{{ with .PageReportView.PageReport }}
+
+			<div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Status Code</b>
+						</div>
+					</div>
+					
+					<div class="col">
+						<div class="content">
+							{{ if .StatusCode }}{{ .StatusCode }}{{ else }}-{{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Blocked</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .BlockedByRobotstxt }}Blocked{{ else }}Not blocked{{ end }} by robots.txt
+						</div>
+					</div>
+				</div>
+
+				{{ if $crawlSitemap }}
+					<div class="box soft">
+						<div class="col borderless">
+							<div class="content">
+								<b>Sitemap</b>
+							</div>
+						</div>
+
+						<div class="col">
+							<div class="content">
+								The URL {{ if .InSitemap }}is{{ else }}is not{{ end }} in the sitemap
+							</div>
+						</div>
+					</div>
+				{{ end }}
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Content Type</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .ContentType }}{{ .ContentType }}{{ else }}-{{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Size</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .Size }}{{ to_kb .Size }}KB{{ else }} - {{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Robots</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .Robots }}{{ .Robots }}{{ else }} - {{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Redirect URL</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .RedirectURL }}{{ .RedirectURL }}{{ else }} - {{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Refresh</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .Refresh }}{{ .Refresh }}{{ else }} - {{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Canonical</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .Canonical }}{{ .Canonical }}{{ else }} - {{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Language</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .Lang }}{{ .Lang }}{{ else }} - {{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Hreflang</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .Hreflangs }}
+
+							<div>
+								<span>Language</span>
+								<span>URL</span>
+							</div>
+
+								{{ range .Hreflangs }}
+								<div>
+									<span>{{ if .Lang }}{{ .Lang }}{{ end }}</span>
+									<span>{{ .URL }}</span>
+								</div>
+								{{ end }}
+
+							{{ else }}
+								-
+							{{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Title</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .Title }}{{ .Title }}{{ else }} - {{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>Description</b>
+						</div>
+					</div>
+
+					<div class="col">
+						<div class="content">
+							{{ if .Description }}{{ .Description }}{{ else }} - {{ end }}
+						</div>
+					</div>
+				</div>
+
+				<div class="box soft">
+					<div class="col borderless">
+						<div class="content">
+							<b>H1</b>
+						</div>
+					</div>
+
+					<div class="col borderless">
+						<div class="content">
+							{{ if .H1 }}{{ .H1 }}{{ else }}-{{ end }}
+						</div>
+					</div>
+				</div>
+
+					<div class="box soft">
+						<div class="col borderless"><div class="content"><b>H2</b></div></div>
+						<div class="col borderless"><div class="content">
+							{{ if .H2 }}{{ .H2 }}{{ else }} - {{ end }}
+						</div></div>
+					</div>
+
+					<div class="box soft">
+						<div class="col borderless">
+							<div class="content">
+								<b>Words</b>
+							</div>
+						</div>
+
+						<div class="col borderless">
+							<div class="content">
+								{{ if .Words }}{{ .Words }}{{ else }} - {{ end }}
+							</div>
+						</div>
+					</div>
+
+					<div class="box">
+						<div class="col borderless">
+							<div class="content">
+								<b>Issues</b>
+							</div>
+						</div>
+
+						<div class="col borderless">
+							<div class="content">
+								{{ if $errorTypes }}
+								<ul>
+									{{ range $errorTypes }}
+										<li>
+											<a href="/issues/view?pid={{ $pid }}&eid={{ . }}">{{ trans . }}</a>
+										</li>
+									{{ end }}
+								</ul>
+								{{ else }}
+									-
+								{{ end }}
+							</div>
+						</div>
+
+					</div>
+				</div>
+			{{ end }}
+	{{ end }}
+
+	{{ if eq .Tab "inlinks" }}
+		{{ if .PageReportView.InLinks }}
+			{{ range .PageReportView.InLinks }}
+				<div class="box">
+					<div class="col col-main">
+						<div class="content">
+							{{ if .Link.Text }}{{ .Link.Text }}<br/>{{ end }}
+							{{ if .PageReport.Title }}{{ .PageReport.Title }}<br/>{{ end }}
+							<a href="/resources?pid={{ $pid }}&rid={{ .PageReport.Id }}&ep=1" class="url">
+								{{ .PageReport.URL }}
+							</a>
+							{{ if .Link.NoFollow }}<p><span class="alert">nofollow</span></p>{{ end }}
+						</div>
+					</div>
+
+					<div class="col col-actions">
+						<a href="/resources?pid={{ $pid }}&rid={{ .PageReport.Id }}&ep=1" class="highlight">
+							View details
+						</a>
+					</div>
+				</div>
+				{{ end }}
+			{{ else }}
+				<div class="box"><div class="content">There are no links to this page.</div></div>
+			{{ end }}
+
+		<div class="box pagination">
+			<div class="col prev">
+				<div class="content">
+					{{ if (gt .PageReportView.Paginator.CurrentPage 1) }}
+					<a href="/resources{{ printf "%s&p=%d" $parameters .PageReportView.Paginator.PreviousPage }}">← prev</a>
+					{{ else }}
+						← prev
+					{{ end }}
+				</div>
+			</div>
+
+			<div class="col">
+				<div class="content aligned">
+					{{ .PageReportView.Paginator.CurrentPage }}/{{ .PageReportView.Paginator.TotalPages }}
+				</div>
+			</div>
+
+			<div class="col next">
+				<div class="content">
+					{{ if (gt .PageReportView.Paginator.TotalPages .PageReportView.Paginator.CurrentPage) }}
+						<a href="/resources{{ printf "%s&p=%d" $parameters .PageReportView.Paginator.NextPage }}">next →</a>
+					{{ else }}
+						next →
+					{{ end }}
+				</div>	
+			</div>
+		</div>
+	{{ end }}
+
+	{{ if eq .Tab "redirections" }}
+		{{ if .PageReportView.Redirects }}
+			{{ range .PageReportView.Redirects }}
+				<div class="box">
+					<div class="col col-main">
+						<div class="content">
+						{{ if .Title }}{{ .Title }}<br/>{{ end }}
+							<a href="/resources?pid={{ $pid }}&rid={{ .Id }}&ep=1" class="url">{{ .URL }}</a>
+						</div>
+					</div>
+
+					<div class="col col-actions">
+						<a href="/resources?pid={{ $pid }}&rid={{ .Id }}&ep=1">View Details</a>
+					</div>
+				</div>
+			{{ end }}
+		{{ else }}
+			<div class="box">
+				<div class="content">There are no redirects to this page.</div>
+			</div>
+		{{ end }}
+		
+		<div class="box pagination">
+			<div class="col prev">
+				<div class="content">
+					{{ if (gt .PageReportView.Paginator.CurrentPage 1) }}
+					<a href="/resources?{{ printf "%s&p=%d" $parameters .PageReportView.Paginator.PreviousPage }}">← prev</a>
+					{{ else }}
+						← prev
+					{{ end }}
+				</div>
+			</div>
+
+			<div class="col"><div class="content aligned">{{ .PageReportView.Paginator.CurrentPage }}/{{ .PageReportView.Paginator.TotalPages }}</div></div>
+
+			<div class="col next">
+				<div class="content">
+					{{ if (gt .PageReportView.Paginator.TotalPages .PageReportView.Paginator.CurrentPage) }}
+						<a href="/resources{{ printf "%s&p=%d" $parameters .PageReportView.Paginator.NextPage }}">next →</a>
+					{{ else }}
+						next →
+					{{ end }}
+				</div>
+			</div>
+		</div>
+	{{ end }}
+
+	{{ if eq .Tab "internal" }}
+			{{ if .PageReportView.PageReport.InternalLinks }}
+					{{ range .PageReportView.PageReport.InternalLinks }}
+						<div class="box">
+							<div class="col col-main">
+								<div class="content">
+								{{ if .Link.Text }}{{ .Link.Text }}<br/>{{ end }}
+								{{ if .PageReport.Title }}{{ .PageReport.Title }}<br/>{{ end }}
+								<a href="/resources?pid={{ $pid }}&rid={{ .PageReport.Id }}&ep=1" class="url">
+									{{ .Link.URL }}
+								</a>
+								{{ if .Link.NoFollow }}<br><span class="alert">nofollow</span>{{ end }}
+								</div>
+							</div>
+
+							{{ if .PageReport.Crawled }}
+							<div class="col col-actions">
+								<a href="/resources?pid={{ $pid }}&rid={{ .PageReport.Id }}&ep=1" class="highlight">
+									View details
+								</a>
+							</div>
+							{{ end }}
+						</div>
+					{{ end }}
+			{{ else }}
+				<div class="box">
+					<div class="content">
+						There are no internal links in this page.
+					</div>
+				</div>
+			{{ end }}
+		
+		<div class="box pagination">
+			<div class="col prev">
+				<div class="content">
+					{{ if (gt .PageReportView.Paginator.CurrentPage 1) }}
+						<a href="/resources{{ printf "%s&p=%d" $parameters .PageReportView.Paginator.PreviousPage }}">← prev</a>
+					{{ else }}
+						← prev
+					{{ end }}
+				</div>
+			</div>
+
+			<div class="col">
+				<div class="content aligned">
+					{{ .PageReportView.Paginator.CurrentPage }}/{{ .PageReportView.Paginator.TotalPages }}
+				</div>
+			</div>
+
+			<div class="col next">
+				<div class="content">
+					{{ if (gt .PageReportView.Paginator.TotalPages .PageReportView.Paginator.CurrentPage) }}
+						<a href="/resources{{ printf "%s&p=%d" $parameters .PageReportView.Paginator.NextPage }}">next →</a>
+					{{ else }}
+						next →
+					{{ end }}
+				</div>
+			</div>
+		</div>
+	{{ end }}
+
+	{{ if eq .Tab "external" }}
+		{{ if .PageReportView.PageReport.ExternalLinks }}
+			{{ range .PageReportView.PageReport.ExternalLinks }}
+					<div class="box">
+						<div class="col col-main">
+							<div class="content">
+								{{ if .Text }}{{ .Text }} <br> {{ end }}
+								<span class="url">{{ .URL }}</span>
+								{{ if not .NoFollow }}<br><span class="alert">follow</span>{{ end }}
+								{{ if .Sponsored }}<span class="alert"><small>sponsored</small></span>{{ end }}
+								{{ if .UGC }}<span class="alert"><small>ugc</small></span>{{ end }}
+							</div>
+						</div>
+					</div>
+				{{ end }}
+			{{ else }}
+				<div class="box"><div class="content">There are no external links in this page.</div></div>
+			{{ end }}
+		
+		<div class="box pagination">
+			<div class="col prev">
+				<div class="content">
+					{{ if (gt .PageReportView.Paginator.CurrentPage 1) }}
+					<a href="/resources{{ printf "%s&p=%d" $parameters .PageReportView.Paginator.PreviousPage }}">← prev</a>
+					{{ else }}
+						← prev
+					{{ end }}
+				</div>
+			</div>
+
+			<div class="col"><div class="content aligned">{{ .PageReportView.Paginator.CurrentPage }}/{{ .PageReportView.Paginator.TotalPages }}</div></div>
+
+			<div class="col next">
+				<div class="content">
+					{{ if (gt .PageReportView.Paginator.TotalPages .PageReportView.Paginator.CurrentPage) }}
+					<a href="/resources{{ printf "%s&p=%d" $parameters .PageReportView.Paginator.NextPage }}">next →</a>
+					{{ else }}
+						next →
+					{{ end }}
+				</div>
+			</div>
+		</div>
+	{{ end }}
+
+	{{ if eq .Tab "images" }}
+		{{ if .PageReportView.PageReport.Images }}
+			{{ range .PageReportView.PageReport.Images }}
+				<div class="box">
+					<div class="col col-main">
+						<div class="content">
+							{{ if .Alt}}{{ .Alt }}<br>{{ end }}
+							<span class="url">{{ .URL }}</span>
+							{{ if not .Alt}}<br><span class="alert">No alt attribute</span>{{ end }}
+						</div>
+					</div>
+				</div>
+				{{ end }}
+			{{ else }}
+				<div class="box"><div class="content aligned">There are no images in this page.</div></div>
+			{{ end }}
+	{{ end }}
+
+	{{ if eq .Tab "iframes" }}
+		{{ if .PageReportView.PageReport.Iframes }}
+			{{ range .PageReportView.PageReport.Iframes }}
+				<div class="box">
+					<div class="col col-main">
+						<div class="content">
+							<span class="url">{{ . }}</span>
+						</div>
+					</div>
+				</div>
+				{{ end }}
+			{{ else }}
+				<div class="box"><div class="content aligned">There are no iframes in this page.</div></div>
+			{{ end }}
+	{{ end }}
+
+	{{ if eq .Tab "audios" }}
+		{{ if .PageReportView.PageReport.Audios }}
+			{{ range .PageReportView.PageReport.Audios }}
+				<div class="box">
+					<div class="col col-main">
+						<div class="content">
+							<span class="url">{{ . }}</span>
+						</div>
+					</div>
+				</div>
+				{{ end }}
+			{{ else }}
+				<div class="box"><div class="content aligned">There are no audios in this page.</div></div>
+			{{ end }}
+	{{ end }}
+
+	{{ if eq .Tab "videos" }}
+		{{ if .PageReportView.PageReport.Videos }}
+			{{ range .PageReportView.PageReport.Videos }}
+				<div class="box">
+					<div class="col col-main">
+						<div class="content">
+							<span class="url">{{ . }}</span>
+						</div>
+					</div>
+				</div>
+			{{ end }}
+		{{ else }}
+			<div class="box"><div class="content aligned">There are no videos in this page.</div></div>
+			{{ end }}
+	{{ end }}
+
+	{{ if eq .Tab "scripts" }}
+		{{ if .PageReportView.PageReport.Scripts }}
+			{{ range .PageReportView.PageReport.Scripts }}
+				<div class="box">
+					<div class="col col-main">
+						<div class="content">
+							<span class="url">{{ . }}</span>
+						</div>
+					</div>
+				</div>		
+				{{ end }}
+			{{ else }}
+				<div class="box"><div class="content aligned">There are no scripts in this page.</div></div>
+			{{ end }}
+	{{ end }}
+	
+	{{ if eq .Tab "styles" }}
+		{{ if .PageReportView.PageReport.Styles }}
+			{{ range .PageReportView.PageReport.Styles }}
+				<div class="box">
+					<div class="col col-main">
+						<div class="content">
+							<span class="url">{{ . }}</span>
+						</div>
+					</div>
+				</div>
+			{{ end }}
+		{{ else }}
+			<div class="box"><div class="content aligned">There are no styles in this page.</div></div>
+		{{ end }}
+	{{ end }}
+
+</div>
+{{ end }}
+{{ template "footer" . }}

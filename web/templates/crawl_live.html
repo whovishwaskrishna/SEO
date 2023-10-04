@@ -1,0 +1,159 @@
+{{ template "head" . }}
+
+<div class="panel">
+
+	<div class="box box-first">
+		<div class="col col-main">
+			<div class="content content-centered">
+				<div>
+					<h2>Live Crawling</h2>
+				</div>
+			</div>
+		</div>
+
+		<div class="col col-actions-l">
+			<div class="main-action">
+				{{ .Data.Project.Host }}
+			</div>
+		</div>
+	</div>
+
+	<div class="box progress-box" id="progress-box">
+		<div class="col col-actions-l borderless progress-counter">
+			<div class="content content-s" id="counter"></div>
+		</div>
+
+		<div class="col col-main">
+			<div class="progress-container">
+				<div class="progress" id="progress"></div>
+			</div>
+		</div>
+	</div>
+
+	<noscript>
+		<div id="crawl-start-msg" class="box box-highlight">
+			<div class="content content-centered">
+				Live crawl is not availabel for your browser. Javascript support is needed.
+			</div>
+		</div>
+	</noscript>
+
+	<div id="urls"></div>
+
+</div>
+
+<template id="tmpl">
+	<div class="box box-highlight">
+		<div class="col col-main">
+			<div class="content">
+				<span class="url"></span>
+			</div>
+		</div>
+
+		<div class="col col-s status-column">
+			<div class="content aligned">
+				<span class="status-code"></span>
+			</div>
+		</div>
+	</div>
+</template>
+
+<template id="msgTmpl">
+	<div class="box box-highlight">
+		<div class="col col-main">
+			<div class="content">
+			</div>
+		</div>
+	</div>
+</template>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const container = document.getElementById("urls")
+		const stmpl = document.getElementById("tmpl")
+		const msgTmpl = document.getElementById("msgTmpl")
+		const progress = document.getElementById("progress")
+		const counter = document.getElementById("counter")
+		const progressBox = document.getElementById("progress-box")
+
+		let started = false;
+
+		addMsg = msg => {
+			t = msgTmpl.content.cloneNode(true)
+			t.querySelector(".content").innerHTML = msg;
+			container.prepend(t)
+		}
+
+		if (!window["WebSocket"]) {
+			addMesg("Live crawl is not availabel for your browser. Websocket support is needed.")
+
+			return
+		}
+
+		addMsg("Connecting to the server, please wait...")
+
+		const protocol = {{ if .Data.Secure }}"wss://" {{ else }}"ws://"{{ end }}
+		let conn = new WebSocket(protocol + document.location.host + "/crawl-ws?pid={{ .Data.Project.Id }}")
+
+		conn.onclose = evt => {
+			conn = null
+		}
+
+		conn.onmessage = evt => {
+			let msg = JSON.parse(evt.data);
+			let data = msg.Data
+
+			switch (msg.Name) {
+			case 'PageReport':
+				t = tmpl.content.cloneNode(true)
+
+				if (data.StatusCode >= 300) {
+					t.querySelector(".status-column").classList.add("bg-alert")
+				} else if (data.StatusCode >= 200 && data.StatusCode < 300) {
+					t.querySelector(".status-column").classList.add("bg-success")
+				}
+				
+				if (data.StatusCode < 1) {
+					data.StatusCode = "-"
+				}
+
+				t.querySelector(".status-code").textContent = data.StatusCode
+
+				progress.style.width = 100 - ((data.Discovered / (data.Crawled + data.Discovered)) * 100) + "%"
+				let p = "URL"
+				if (data.Crawled > 1) {
+					p += "s"
+				}
+				counter.textContent = data.Crawled + " " + p + " crawled"
+
+				t.querySelector(".url").textContent = data.URL
+				container.prepend(t)
+				break
+			case 'IssuesInit':
+				addMsg("Crawl completed. Creating the report, please wait...")
+				break
+			case 'CrawlEnd':
+				conn.close()
+				let totalURLs = msg.Data
+				console.log(msg)
+				if (totalURLs > 0) {
+					window.location = "/dashboard?pid={{ .Data.Project.Id }}"
+				} else {
+					window.location = "/"
+				}
+				break
+			}
+
+			if (started == false) {
+				started = true
+				progressBox.style.display = "flex"
+			}
+
+			if (container.childElementCount > 15) {
+				container.removeChild(container.lastElementChild)
+			}
+		}
+	});
+</script>
+
+{{ template "footer" . }}
